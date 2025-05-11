@@ -1,4 +1,5 @@
 import regular_expression as re
+import syntax_tree as st
 
 INPUT_RE_FILE = "../example_input_RE.txt"
 
@@ -21,12 +22,14 @@ def main():
     for regex in regular_expressions:
         print(regex)
 
-    print("")
-    print("VALIDATION")
-    print("")
-
+    print("\nPostfix notation")
     for i in regular_expressions:
         print(i.to_postfix(i.pattern))
+
+    print("\nStack")
+    for i in regular_expressions:
+        tree = st.SyntaxTree(i.to_postfix(i.pattern))
+        print(tree.build_syntax_tree().symbol)
 
 if __name__ == "__main__":
     main()

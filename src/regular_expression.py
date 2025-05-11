@@ -110,6 +110,10 @@ class RegularExpression:
         return transformed
     
     def to_postfix(self, pattern):
+        """
+            Creates a RE in Postfix notation.
+            E.g.: ['b', '?', 'a', 'b', '|', '+', '.']
+        """
         pattern = self.add_concatenation_symbols(self.expand_character_classes(pattern))
         output = []
         stack = []
@@ -147,7 +151,7 @@ class RegularExpression:
                     chars.append(content[i])
                     i += 1
             return '(' + '|'.join(chars) + ')'
-        return re_.sub(r'\[([^\]]+)\]', expand_class, pattern)
+        return re_.sub(r'\[([^\]]+)\]', expand_class, pattern) #TODO: replace re_.sub() for my own method.
     
     def tokenize(self, pattern):
         """Splits a pattern into tokens (characters, operators, parentheses)"""
