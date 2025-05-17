@@ -134,6 +134,8 @@ class RegularExpression:
                 output.append(token)
         while stack:
             output.append(stack.pop())
+        output.append('#')
+        output.append('.')  # <- concatenação final
         return output
 
     def expand_character_classes(self, pattern):
