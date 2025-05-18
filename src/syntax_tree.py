@@ -154,57 +154,6 @@ def build_afd(root, followpos, leaf_positions):
 
         return AFD(start_state, accept_states, transitions)
 
-
-# def build_afd(root, followpos):
-#     afd = AFD()
-#     state_id_map = dict()  # frozenset of positions -> state name (optional, for printing)
-
-#     # Encontra a posição do símbolo terminal '#'
-#     hash_position = None
-#     for pos in followpos:
-#         if root.symbol == '#' or (hasattr(root, 'position') and root.symbol == '#'):
-#             hash_position = root.position
-#             break
-#         if isinstance(root, BinaryNode):
-#             if isinstance(root.right, Leaf) and root.right.symbol == '#':
-#                 hash_position = root.right.position
-#                 break
-
-#     # Estado inicial
-#     start = frozenset(root.firstpos)
-#     afd.start_state = start
-#     unmarked_states = [start]
-#     marked_states = set()
-
-#     while unmarked_states:
-#         current = unmarked_states.pop()
-#         marked_states.add(current)
-
-#         symbols_to_positions = dict()
-
-#         for pos in current:
-#             # Encontrar o símbolo associado a esta posição
-#             symbol_node = find_leaf_by_position(root, pos)
-#             if symbol_node.symbol == '#':
-#                 continue  # não cria transição com #
-#             if symbol_node.symbol not in symbols_to_positions:
-#                 symbols_to_positions[symbol_node.symbol] = set()
-#             symbols_to_positions[symbol_node.symbol].update(followpos[pos])
-
-#         for symbol, next_positions in symbols_to_positions.items():
-#             next_state = frozenset(next_positions)
-#             afd.add_transition(current, symbol, next_state)
-#             if next_state not in marked_states and next_state not in unmarked_states:
-#                 unmarked_states.append(next_state)
-
-#     # Estados de aceitação: contém a posição do '#'
-#     for state in afd.states:
-#         if hash_position in state:
-#             afd.accept_states.add(state)
-
-#     return afd
-
-
 def find_leaf_by_position(node, pos):
     if isinstance(node, Leaf):
         if node.position == pos:
@@ -217,4 +166,3 @@ def find_leaf_by_position(node, pos):
             return left_result
         return find_leaf_by_position(node.right, pos)
     return None
-

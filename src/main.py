@@ -1,6 +1,7 @@
 import regular_expression as re
 import syntax_tree as st
-from syntax_tree import build_afd
+import afn
+import automaton_operations as ao
 
 INPUT_RE_FILE = "../example_input_RE.txt"
 
@@ -50,6 +51,29 @@ def main():
         followpos = tree.compute_nullable_first_last_follow(root)
         afd = st.build_afd(root, followpos, tree.leaf_positions)
         print(afd)
+    
+    print("\nAFD export")
+    for i in regular_expressions:
+        postfix = i.to_postfix(i.pattern)
+        tree = st.SyntaxTree(postfix)
+        root = tree.build_syntax_tree()
+        followpos = tree.compute_nullable_first_last_follow(root)
+        afd = st.build_afd(root, followpos, tree.leaf_positions)
+        afd.export_to_txt("../afd_output_%s.txt" % regular_expressions.index(i))
+
+    print("\nUnion with epsilon")
+    afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
+    afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
+    union_afn = ao.AutomatonOperations.union(afn1, afn2)
+    print(union_afn)
+
+    print("\nAFN to AFD")
+    afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
+    afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
+    union_afn = ao.AutomatonOperations.union(afn1, afn2)
+    afd = union_afn.to_afd()
+    print(afd)
+
 
 if __name__ == "__main__":
     main()
