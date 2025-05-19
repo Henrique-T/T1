@@ -2,12 +2,13 @@ from collections import deque
 import afd
 
 class AFN:
-    def __init__(self, states, start_state, final_states, transitions, alphabet):
+    def __init__(self, states, start_state, final_states, transitions, alphabet, token_types=None):
         self.states = states                        # Set of integers
         self.start_state = start_state              # Single integer
         self.final_states = final_states            # Set of integers
         self.transitions = transitions              # Dict[int][symbol] -> Set[int]
         self.alphabet = alphabet                    # Set of symbols (excluding 'ε' unless used)
+        self.token_types = token_types or {}        # final_state -> token_type
 
     def offset_states(self, offset):
         """
@@ -25,15 +26,15 @@ class AFN:
             for symbol, destinations in trans.items():
                 new_transitions[new_state][symbol] = {d + offset for d in destinations}
 
-        return AFN(new_states, new_start, new_finals, new_transitions, self.alphabet)
+        new_token_types = {s + offset: t for s, t in self.token_types.items()}
+        return AFN(new_states, new_start, new_finals, new_transitions, self.alphabet, new_token_types)
 
 
     @staticmethod
-    def load_afd_from_file(filepath):
+    def load_afd_from_file(filepath, token_type=None):
         with open(filepath, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
 
-        num_states = int(lines[0])  # not strictly needed
         start_state = int(lines[1])
         final_states = {int(s) for s in lines[2].split(',')}
         alphabet = set(lines[3].split(','))
@@ -54,7 +55,12 @@ class AFN:
             for dest_set in dests.values():
                 states.update(dest_set)
 
-        return AFN(states, start_state, final_states, transitions, alphabet)
+        token_types = {}
+        if token_type:
+            for s in final_states:
+                token_types[s] = token_type
+
+        return AFN(states, start_state, final_states, transitions, alphabet, token_types)
 
     def __str__(self):
         result = []
@@ -138,11 +144,29 @@ class AFN:
         print(f"{'From':>5} {'Symbol':>10} {'To':>5}")
         for from_id, symbol, to_id in lexical_table:
             print(f"{from_id:>5} {symbol:>10} {to_id:>5}")
+        
+
+        token_map = {}  # DFA_state_id -> token_type
+
+        for state_set in accept_states:
+            dfa_state_id = state_id_map[state_set]
+            # Pick the first matching final state in the original NFA
+            matched_token_types = [
+                self.token_types[s]
+                for s in state_set
+                if s in self.final_states and s in self.token_types
+            ]
+            if matched_token_types:
+                # Prioritize by order (e.g., for longest match or precedence)
+                token_map[dfa_state_id] = matched_token_types[0]
+
 
         return afd.AFD(
             start_state=start_closure,
             accept_states=accept_states,
-            transitions=transitions
-        )
+            transitions=transitions,
+            token_map=token_map
+        ), token_map
+
 
 

@@ -2,6 +2,7 @@ import regular_expression as re
 import syntax_tree as st
 import afn
 import automaton_operations as ao
+from lexer_simulation import run_lexer
 
 INPUT_RE_FILE = "../example_input_RE.txt"
 
@@ -19,60 +20,84 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    # Debug output of parsed regex objects
-    print("\nParsed Regular Expressions:")
-    for regex in regular_expressions:
-        print(regex)
+    # # Debug output of parsed regex objects
+    # print("\nParsed Regular Expressions:")
+    # for regex in regular_expressions:
+    #     print(regex)
 
-    print("\nPostfix notation")
-    for i in regular_expressions:
-        postfix = i.to_postfix(i.pattern)
-        print(postfix)
+    # print("\nPostfix notation")
+    # for i in regular_expressions:
+    #     postfix = i.to_postfix(i.pattern)
+    #     print(postfix)
 
-    print("\nStack - root of syntax tree")
-    for i in regular_expressions:
-        postfix = i.to_postfix(i.pattern)
-        tree = st.SyntaxTree(postfix)
-        print(tree.build_syntax_tree().symbol)
+    # print("\nStack - root of syntax tree")
+    # for i in regular_expressions:
+    #     postfix = i.to_postfix(i.pattern)
+    #     tree = st.SyntaxTree(postfix)
+    #     print(tree.build_syntax_tree().symbol)
 
-    print("\nNullable, First, Last, Follow")
-    for i in regular_expressions:
-        postfix = i.to_postfix(i.pattern)
-        tree = st.SyntaxTree(postfix)
-        root = tree.build_syntax_tree()
-        followpos = tree.compute_nullable_first_last_follow(root)
-        print(followpos)
+    # print("\nNullable, First, Last, Follow")
+    # for i in regular_expressions:
+    #     postfix = i.to_postfix(i.pattern)
+    #     tree = st.SyntaxTree(postfix)
+    #     root = tree.build_syntax_tree()
+    #     followpos = tree.compute_nullable_first_last_follow(root)
+    #     print(followpos)
 
-    print("\nAFD")
-    for i in regular_expressions:
-        postfix = i.to_postfix(i.pattern)
-        tree = st.SyntaxTree(postfix)
-        root = tree.build_syntax_tree()
-        followpos = tree.compute_nullable_first_last_follow(root)
-        afd = st.build_afd(root, followpos, tree.leaf_positions)
-        print(afd)
+    # print("\nAFD")
+    # for i in regular_expressions:
+    #     postfix = i.to_postfix(i.pattern)
+    #     tree = st.SyntaxTree(postfix)
+    #     root = tree.build_syntax_tree()
+    #     followpos = tree.compute_nullable_first_last_follow(root)
+    #     afd = st.build_afd(root, followpos, tree.leaf_positions)
+    #     print(afd)
     
-    print("\nAFD export")
-    for i in regular_expressions:
-        postfix = i.to_postfix(i.pattern)
-        tree = st.SyntaxTree(postfix)
-        root = tree.build_syntax_tree()
-        followpos = tree.compute_nullable_first_last_follow(root)
-        afd = st.build_afd(root, followpos, tree.leaf_positions)
-        afd.export_to_txt("../afd_output_%s.txt" % regular_expressions.index(i))
+    # print("\nAFD export")
+    # for i in regular_expressions:
+    #     postfix = i.to_postfix(i.pattern)
+    #     tree = st.SyntaxTree(postfix)
+    #     root = tree.build_syntax_tree()
+    #     followpos = tree.compute_nullable_first_last_follow(root)
+    #     afd = st.build_afd(root, followpos, tree.leaf_positions)
+    #     afd.export_to_txt("../afd_output_%s.txt" % regular_expressions.index(i))
 
-    print("\nUnion with epsilon")
-    afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
-    afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
-    union_afn = ao.AutomatonOperations.union(afn1, afn2)
-    print(union_afn)
+    # print("\nUnion with epsilon")
+    # afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
+    # afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
+    # union_afn = ao.AutomatonOperations.union(afn1, afn2)
+    # print(union_afn)
 
-    print("\nAFN to AFD")
-    afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
-    afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
+    # print("\nAFN to AFD")
+    # afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt")
+    # afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt")
+    # union_afn = ao.AutomatonOperations.union(afn1, afn2)
+    # afd = union_afn.to_afd()
+    # print(afd)
+
+    print("\nLexer Analysis")
+    afn1 = afn.AFN.load_afd_from_file("../afd_output_0.txt", token_type="ID")
+    afn2 = afn.AFN.load_afd_from_file("../afd_output_1.txt", token_type="NUMBER")
+    print(afn1.token_types)
+    print("#")
+    print(afn2.token_types)
     union_afn = ao.AutomatonOperations.union(afn1, afn2)
-    afd = union_afn.to_afd()
-    print(afd)
+    afd, token_map = union_afn.to_afd()
+
+
+
+    print("DFA start state:", afd.start_state)
+    print("DFA accepting states:", afd.accept_states)
+    print("DFA transitions:")
+    for state, trans in afd.transitions.items():
+        print(f"  From state {state}:")
+        for symbol, target in trans.items():
+            print(f"    On '{symbol}' -> {target}")
+
+    print("TOKEN MAP: ", token_map)
+
+    run_lexer(afd, token_map, "../example_test_input.txt", "../token_list_output.txt")
+    print("Token list written to:", "../token_list_output.txt")
 
 
 if __name__ == "__main__":

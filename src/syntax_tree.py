@@ -148,11 +148,11 @@ def build_afd(root, followpos, leaf_positions):
                 unmarked_states.append(new_state)
             transitions[current][symbol] = new_state
 
-        for state in dstates:
-            if hash_position in state:
-                accept_states.add(state)
+    for state in dstates:
+        if hash_position in state:
+            accept_states.add(state)
 
-        return AFD(start_state, accept_states, transitions)
+    return AFD(start_state, accept_states, transitions)
 
 def find_leaf_by_position(node, pos):
     if isinstance(node, Leaf):

@@ -1,10 +1,11 @@
 
 
 class AFD:
-    def __init__(self, start_state, accept_states, transitions):
+    def __init__(self, start_state, accept_states, transitions, token_map=None):
         self.start_state = start_state
         self.accept_states = accept_states
         self.transitions = transitions  # Dict[frozenset, Dict[symbol, frozenset]]
+        self.token_map = token_map or {}
 
     def __str__(self):
         lines = ["AFD:"]

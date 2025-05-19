@@ -27,6 +27,8 @@ class AutomatonOperations:
         if new_start not in new_transitions:
             new_transitions[new_start] = {}
         new_transitions[new_start]['ε'] = {afn1.start_state, afn2.start_state}
+        
+        new_token_types = {**afn1.token_types, **afn2.token_types}
+        return afn.AFN(new_states, new_start, new_finals, new_transitions, new_alphabet | {'ε'}, new_token_types)
 
-        return afn.AFN(new_states, new_start, new_finals, new_transitions, new_alphabet | {'ε'})
 
