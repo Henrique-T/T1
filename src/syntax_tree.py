@@ -119,7 +119,7 @@ def build_afd(root, followpos, leaf_positions):
             break
 
     if hash_position is None:
-        raise ValueError("Símbolo '#' não encontrado na expressão regular.")
+        raise ValueError("Character '#' not found in RE.")
 
     # Estado inicial: firstpos da raiz
     start_state = frozenset(root.firstpos)

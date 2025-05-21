@@ -139,11 +139,11 @@ class AFN:
             if any(s in self.final_states for s in state):
                 accept_states.add(state)
 
-        # Print lexical analysis table (optional)
-        print("Lexical Analysis Table:")
-        print(f"{'From':>5} {'Symbol':>10} {'To':>5}")
-        for from_id, symbol, to_id in lexical_table:
-            print(f"{from_id:>5} {symbol:>10} {to_id:>5}")
+        # Print lexical analysis table
+        # print("Lexical Analysis Table:")
+        # print(f"{'From':>5} {'Symbol':>10} {'To':>5}")
+        # for from_id, symbol, to_id in lexical_table:
+        #     print(f"{from_id:>5} {symbol:>10} {to_id:>5}")
         
 
         token_map = {}  # DFA_state_id -> token_type

@@ -22,14 +22,14 @@ def simulate_dfa_on_text(dfa, token_map, text):
 
         while current_index < len(text):
             symbol = text[current_index]
-            print(f"Reading symbol: '{symbol}' from state {state}")
+            #print(f"Reading symbol: '{symbol}' from state {state}")
 
             if symbol not in dfa.transitions.get(state, {}):
                 print(f" No transition for symbol '{symbol}' from state {state}")
                 break
 
             state = dfa.transitions[state][symbol]
-            print(f"  ✅ Transition to state {state}")
+            #print(f"Transition to state {state}")
 
             if state in dfa.accept_states:
                 last_accepting = state
