@@ -1,6 +1,16 @@
 
 
 class AFD:
+    """
+    Represents a Deterministic Finite Automaton (DFA).
+
+    Attributes:
+        start_state (frozenset): The starting state of the DFA.
+        accept_states (set of frozenset): The set of accepting states.
+        transitions (dict): A dictionary mapping a state (frozenset) to a dictionary 
+                            of input symbols to destination states (frozenset).
+        token_map (dict): A mapping from accepting states to their associated token types.
+    """
     def __init__(self, start_state, accept_states, transitions, token_map=None):
         self.start_state = start_state
         self.accept_states = accept_states
@@ -8,6 +18,10 @@ class AFD:
         self.token_map = token_map or {}
 
     def __str__(self):
+        """
+        Returns a human-readable string representation of the DFA.
+        Useful for debugging or inspection.
+        """
         lines = ["AFD:"]
         lines.append(f"Start state: {self.start_state}")
         lines.append(f"Accept states: {self.accept_states}")
@@ -18,6 +32,20 @@ class AFD:
         return "\n".join(lines)
 
     def export_to_txt(self, filename):
+        """
+        Exports the DFA to a text file in a structured format.
+
+        The output format includes:
+            - Total number of states
+            - Start state ID
+            - Accepting state IDs
+            - Alphabet symbols
+            - Transitions in the form "source_id,symbol,target_id"
+
+        States are assigned numeric IDs starting from 0.
+        Args:
+            filename (str): Path to the output file where the DFA will be written.
+        """
         state_id_map = {}
         current_id = 0
 

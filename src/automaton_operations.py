@@ -1,8 +1,30 @@
 import afn
 
 class AutomatonOperations:
+    """
+    Provides static operations for combining and manipulating finite automata (AFNs/NFAs).
+
+    Currently supports:
+        - Union of two AFNs
+    """
     @staticmethod
     def union(afn1: afn.AFN, afn2: afn.AFN) -> afn.AFN:
+        """
+        Constructs a new AFN representing the union of two given AFNs.
+
+        This operation:
+            - Offsets states in the second AFN to avoid naming collisions.
+            - Creates a new start state with ε-transitions to the original start states.
+            - Merges transitions, states, final states, and alphabets.
+            - Preserves token types from both automata.
+
+        Args:
+            afn1 (AFN): The first AFN.
+            afn2 (AFN): The second AFN.
+
+        Returns:
+            AFN: A new AFN that accepts the union of the languages of `afn1` and `afn2`.
+        """
         # Offset afn2 states to avoid collision
         offset = max(afn1.states) + 1
         afn2 = afn2.offset_states(offset)

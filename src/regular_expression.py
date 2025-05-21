@@ -1,18 +1,45 @@
 import re as re_
 
 class RegularExpression:
+    """
+    Represents a regular expression definition and provides utilities for processing and transforming it.
+
+    This class supports parsing named regular expressions from a definition line,
+    expanding character classes, inserting explicit concatenation symbols, and converting
+    infix regular expressions to postfix (Reverse Polish Notation) format.
+
+    Attributes:
+        name (str): The name or identifier of the regular expression.
+        pattern (str): The raw or preprocessed infix pattern of the regular expression.
+    """
     def __init__(self, name: str, pattern: str):
         self.name = name
         self.pattern = pattern.strip()
-        #self.postfix = self.to_postfix(pattern)
     
     def __repr__(self):
+        """
+        Returns a string representation of the RegularExpression instance.
+
+        Returns:
+            str: A formatted string for debugging and logging.
+        """
         return f"<RegularExpression name='{self.name}' pattern='{self.pattern}'>"
 
     @staticmethod
     def from_definition_line(line: str):
         """
-        Parses a line like 'id: [a-zA-Z]([a-zA-Z] | [0-9])*' into a RegularExpression object.
+        Creates a RegularExpression instance from a definition line in the format "name: pattern".
+
+        Args:
+            line (str): A string containing the name and pattern separated by a colon.
+
+        Returns:
+            RegularExpression: A new RegularExpression instance.
+
+        Raises:
+            ValueError: If the line does not contain a colon.
+
+        RE e.g.: 'id: [a-zA-Z]([a-zA-Z] | [0-9])*'
         """
         if ':' not in line:
             raise ValueError(f"Invalid regular expression definition: {line}")
@@ -29,7 +56,6 @@ class RegularExpression:
             or token.isalnum()  # single letter/digit
         )
 
-    
     @staticmethod
     def precedence(op):
         if op in {'*', '+', '?'}:
@@ -43,9 +69,17 @@ class RegularExpression:
     def starts_expr(token):
         return token in {'(',} or token.startswith('[') or token.isalnum()
 
-
     def add_concatenation_symbols(self, pattern):
-        result = []
+        """
+        Inserts explicit concatenation symbols '.' into the regular expression pattern
+        where implicit concatenation is intended.
+
+        Args:
+            pattern (str): The input infix pattern string.
+
+        Returns:
+            str: The updated pattern with '.' for concatenation.
+        """
         i = 0
 
         def is_character_class(token):
@@ -111,8 +145,14 @@ class RegularExpression:
     
     def to_postfix(self, pattern):
         """
-            Creates a RE in Postfix notation.
-            E.g.: ['b', '?', 'a', 'b', '|', '+', '.']
+        Converts an infix regular expression pattern to postfix notation (Reverse Polish Notation),
+        adding explicit concatenation and expanding character classes.
+
+        Args:
+            pattern (str): The infix pattern string.
+
+        Returns:
+            List[str]: A list of tokens representing the postfix expression.
         """
         pattern = self.add_concatenation_symbols(self.expand_character_classes(pattern))
         output = []
@@ -135,11 +175,19 @@ class RegularExpression:
         while stack:
             output.append(stack.pop())
         output.append('#')
-        output.append('.')  # <- concatenação final
+        output.append('.')  # <- final concat
         return output
 
     def expand_character_classes(self, pattern):
-        """Converts character ranges like [a-zA-Z] into (a|b|...|Z)"""
+        """
+        Expands character classes (e.g., [a-z]) into explicit alternation format (e.g., (a|b|...|z)).
+
+        Args:
+            pattern (str): The pattern containing character classes.
+
+        Returns:
+            str: The pattern with expanded character classes.
+        """
         def expand_class(match):
             chars = []
             content = match.group(1)
@@ -156,7 +204,16 @@ class RegularExpression:
         return re_.sub(r'\[([^\]]+)\]', expand_class, pattern) #TODO: replace re_.sub() for my own method.
     
     def tokenize(self, pattern):
-        """Splits a pattern into tokens (characters, operators, parentheses)"""
+        """
+        Splits the regular expression string into a list of tokens, treating operators,
+        parentheses, and literals separately.
+
+        Args:
+            pattern (str): The regular expression string with explicit operators.
+
+        Returns:
+            List[str]: A list of tokens extracted from the pattern.
+        """
         tokens = []
         i = 0
         while i < len(pattern):

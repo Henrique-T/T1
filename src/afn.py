@@ -2,18 +2,36 @@ from collections import deque
 import afd
 
 class AFN:
+    """
+    Represents a Non-deterministic Finite Automaton (AFN/NFA), including ε-transitions.
+
+    Attributes:
+        states (set[int]): Set of all states.
+        start_state (int): The start state of the AFN.
+        final_states (set[int]): Set of accepting (final) states.
+        transitions (dict[int][str] -> set[int]): State transition function including ε-transitions.
+        alphabet (set[str]): Set of valid input symbols (excluding ε unless used explicitly).
+        token_types (dict[int] -> str): Optional mapping from final states to token types.
+    """
     def __init__(self, states, start_state, final_states, transitions, alphabet, token_types=None):
-        self.states = states                        # Set of integers
-        self.start_state = start_state              # Single integer
-        self.final_states = final_states            # Set of integers
-        self.transitions = transitions              # Dict[int][symbol] -> Set[int]
-        self.alphabet = alphabet                    # Set of symbols (excluding 'ε' unless used)
-        self.token_types = token_types or {}        # final_state -> token_type
+        self.states = states
+        self.start_state = start_state
+        self.final_states = final_states
+        self.transitions = transitions
+        self.alphabet = alphabet
+        self.token_types = token_types or {}
 
     def offset_states(self, offset):
         """
-        Returns a new AFN with all states incremented by `offset`.
-        This makes it safe for us to merge to FAs that use the same names for states.
+        Returns a new AFN where all state numbers are offset by a given value.
+
+        Useful for merging multiple AFNs while avoiding state number conflicts.
+
+        Args:
+            offset (int): The value to add to all state identifiers.
+
+        Returns:
+            AFN: A new AFN instance with updated state identifiers.
         """
         new_states = {s + offset for s in self.states}
         new_start = self.start_state + offset
@@ -32,6 +50,16 @@ class AFN:
 
     @staticmethod
     def load_afd_from_file(filepath, token_type=None):
+        """
+        Loads an AFN from a file that was exported in AFD format.
+
+        Args:
+            filepath (str): Path to the input file.
+            token_type (str, optional): Token type to associate with all final states.
+
+        Returns:
+            AFN: A new AFN instance reconstructed from the file.
+        """
         with open(filepath, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
 
@@ -63,6 +91,7 @@ class AFN:
         return AFN(states, start_state, final_states, transitions, alphabet, token_types)
 
     def __str__(self):
+        """Returns a human-readable string representation of the AFN."""
         result = []
         result.append(f"States: {sorted(self.states)}")
         result.append(f"Start state: {self.start_state}")
@@ -76,6 +105,14 @@ class AFN:
         return "\n".join(result)
 
     def to_afd(self):
+        """
+        Converts this AFN (with possible ε-transitions) to an equivalent AFD (DFA).
+
+        Returns:
+            tuple:
+                - AFD: The deterministic equivalent of the current AFN.
+                - dict[int] -> str: Mapping of DFA state IDs to token types.
+        """
         def epsilon_closure(states):
             """Compute the epsilon-closure of a set of states."""
             closure = set(states)
@@ -89,7 +126,7 @@ class AFN:
             return closure
 
         def move(states, symbol):
-            """Compute the set of states reachable from `states` via `symbol`."""
+            """Compute the set of states reachable from 'states' via 'symbol'."""
             result = set()
             for state in states:
                 if symbol in self.transitions.get(state, {}):
@@ -144,7 +181,6 @@ class AFN:
         # print(f"{'From':>5} {'Symbol':>10} {'To':>5}")
         # for from_id, symbol, to_id in lexical_table:
         #     print(f"{from_id:>5} {symbol:>10} {to_id:>5}")
-        
 
         token_map = {}  # DFA_state_id -> token_type
 
@@ -159,7 +195,6 @@ class AFN:
             if matched_token_types:
                 # Prioritize by order (e.g., for longest match or precedence)
                 token_map[dfa_state_id] = matched_token_types[0]
-
 
         return afd.AFD(
             start_state=start_closure,

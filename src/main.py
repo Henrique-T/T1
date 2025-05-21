@@ -6,6 +6,8 @@ from lexer_simulation import run_lexer
 from functools import reduce
 
 INPUT_RE_FILE = "../example_input_RE.txt"
+INPUT_USER_FILE = "../example_test_input.txt"
+OUTPUT_TOKEN_LIST_FILE = "../token_list_output.txt"
 
 def main():
     regular_expressions = []
@@ -47,8 +49,8 @@ def main():
     #     for symbol, target in trans.items():
     #         print(f"    On '{symbol}' -> {target}")
 
-    run_lexer(afd, token_map, "../example_test_input.txt", "../token_list_output.txt")
-    print("Token list written to: ../token_list_output.txt")
+    run_lexer(afd, token_map, INPUT_USER_FILE, OUTPUT_TOKEN_LIST_FILE)
+    print(f"Token list written to: {OUTPUT_TOKEN_LIST_FILE}")
 
 
 if __name__ == "__main__":

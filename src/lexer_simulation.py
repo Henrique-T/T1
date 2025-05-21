@@ -2,14 +2,24 @@
 
 def simulate_dfa_on_text(dfa, token_map, text):
     """
-    Simulates DFA on input text and returns list of (lexeme, token) tuples.
-    
+    Simulates a DFA over an entire input text, returning a list of recognized tokens.
+
+    This function:
+    - Traverses the input string using the DFA transitions.
+    - Tracks the last accepting state to ensure maximal munch (longest match).
+    - Associates each recognized lexeme with its corresponding token.
+    - If no accepting state is found, it marks the lexeme as an error.
+
     Parameters:
-    - dfa: dict with {state, transitions, accepting states}
-    - token_map: dict {state: token_name} from regex order
-    - text: str, entire input program
-    
-    Returns: list of (lexeme, token) or (lexeme, "erro!")
+        dfa: An object with attributes:
+            - start_state: initial DFA state
+            - transitions: dict[state][symbol] -> next_state
+            - accept_states: set of accepting states
+        token_map: dict mapping DFA states to token names
+        text (str): the complete input program as a single string
+
+    Returns:
+        List[Tuple[str, str]]: A list of (lexeme, token) tuples, where token is either a valid name or "erro!".
     """
     i = 0
     tokens = []
@@ -59,9 +69,23 @@ def simulate_dfa_on_text(dfa, token_map, text):
 
 def simulate_dfa_on_line(dfa, token_map, line):
     """
-    Simulates DFA on a single line of input and returns (lexeme, token).
-    If the entire line is accepted by DFA, it returns the corresponding token.
-    Otherwise, it returns (line, "erro!").
+    Simulates DFA execution over a single line of input.
+
+    This function:
+    - Verifies whether the DFA fully accepts the given line.
+    - Resolves the token based on the final accepting state.
+    - If no valid path exists or final state is not accepting, returns "erro!".
+
+    Parameters:
+        dfa: An object with attributes:
+            - start_state
+            - transitions: dict[state][symbol] -> next_state
+            - accept_states: set of accepting states
+        token_map: dict mapping DFA sub-states to token names
+        line (str): a single line of input
+
+    Returns:
+        Tuple[str, str]: (line, token) if accepted; otherwise (line, "erro!")
     """
     state = dfa.start_state
     i = 0
@@ -84,6 +108,20 @@ def simulate_dfa_on_line(dfa, token_map, line):
         return (line, "erro!")
 
 def run_lexer(dfa, token_map, input_text_path, output_token_path):
+    """
+    Runs the lexer using the DFA on an input file and writes token output to another file.
+
+    This function:
+    - Reads and strips lines from the input text file.
+    - Simulates DFA execution line by line.
+    - Writes results in the format <lexeme, token> per line in the output file.
+
+    Parameters:
+        dfa: The DFA used for simulation, with start_state, transitions, and accept_states.
+        token_map: dict mapping DFA states or substates to token names.
+        input_text_path (str): path to the input file containing program text.
+        output_token_path (str): path to the output file where results will be written.
+    """
     with open(input_text_path, 'r') as f:
         lines = [line.strip() for line in f if line.strip()]
 
@@ -95,14 +133,3 @@ def run_lexer(dfa, token_map, input_text_path, output_token_path):
     with open(output_token_path, 'w') as out:
         for lexeme, token in tokens:
             out.write(f"<{lexeme}, {token}>\n")
-
-
-# def run_lexer(dfa, token_map, input_text_path, output_token_path):
-#     with open(input_text_path, 'r') as f:
-#         text = f.read().replace('\n', '')
-
-#     tokens = simulate_dfa_on_text(dfa, token_map, text)
-
-#     with open(output_token_path, 'w') as out:
-#         for lexeme, token in tokens:
-#             out.write(f"<{lexeme}, {token}>\n")

@@ -1,14 +1,27 @@
 from afd import AFD
+from collections import deque, defaultdict
 
 class SyntaxTree():
+    """
+    Constructs and analyzes the syntax tree of a regular expression in postfix notation.
+
+    This class builds a syntax tree from postfix tokens of a regular expression, and computes
+    nullable, firstpos, lastpos, and followpos sets required for the construction of a DFA
+    using the syntax tree method.
+
+    Attributes:
+        stack (list): Temporary stack used for building the tree.
+        postfix_tokens (list): Tokens in postfix notation representing the regular expression.
+        leaf_positions (dict): Maps leaf node positions to their corresponding symbols.
+    """
     def __init__(self, postfix_tokens):
         self.stack = []
         self.postfix_tokens = postfix_tokens
         self.leaf_positions = {}  # Mapeia posição -> símbolo
 
     def build_syntax_tree(self):
+        """Constructs the syntax tree from the postfix tokens and returns the root node."""
         position_counter = 1
-
         for token in self.postfix_tokens:
             if token.isalnum() or token == '#':
                 node = Leaf(token, position_counter)
@@ -36,6 +49,7 @@ class SyntaxTree():
 
     
     def compute_nullable_first_last_follow(self, root):
+        """Computes nullable, firstpos, lastpos, and followpos for all nodes in the tree starting from the given root node."""
         followpos = dict()
 
         def traverse(node):
@@ -86,6 +100,15 @@ class SyntaxTree():
         return followpos
 
 class Node:
+    """
+    Base class for nodes in the syntax tree of a regular expression.
+
+    Attributes:
+        symbol (str): The symbol represented by the node (operator or terminal).
+        nullable (bool): Whether the subtree rooted at this node can derive the empty string.
+        firstpos (set): Set of positions that can appear first in a string derived from this node.
+        lastpos (set): Set of positions that can appear last in a string derived from this node.
+    """
     def __init__(self, symbol):
         self.symbol = symbol
         self.nullable = False
@@ -93,25 +116,68 @@ class Node:
         self.lastpos = set()
 
 class Leaf(Node):
+    """
+    Represents a leaf node in the syntax tree, corresponding to a terminal symbol.
+
+    Inherits from:
+        Node
+
+    Attributes:
+        symbol (str): The terminal symbol (character) this leaf represents.
+        position (int): A unique position number assigned to the leaf for use in followpos calculations.
+    """
     def __init__(self, symbol, position):
         super().__init__(symbol)
         self.position = position
 
 class UnaryNode(Node):
+    """
+    Represents a unary operator node in the syntax tree (e.g., '*', '+', '?').
+
+    Inherits from:
+        Node
+
+    Attributes:
+        symbol (str): The unary operator.
+        child (Node): The single child node of this unary operator.
+    """
     def __init__(self, symbol, child):
         super().__init__(symbol)
         self.child = child
 
 class BinaryNode(Node):
+    """
+    Represents a binary operator node in the syntax tree (e.g., concatenation '.', or alternation '|').
+
+    Inherits from:
+        Node
+
+    Attributes:
+        symbol (str): The binary operator.
+        left (Node): The left operand subtree.
+        right (Node): The right operand subtree.
+    """
     def __init__(self, symbol, left, right):
         super().__init__(symbol)
         self.left = left
         self.right = right
 
 def build_afd(root, followpos, leaf_positions):
-    from collections import deque, defaultdict
+    """
+    Constructs a deterministic finite automaton (AFD) from a syntax tree using followpos information.
 
-    # Encontra a posição que tem o símbolo '#'
+    Args:
+        root (Node): The root of the syntax tree.
+        followpos (dict): A dictionary mapping position integers to sets of follow positions.
+        leaf_positions (dict): A dictionary mapping positions to their respective terminal symbols.
+
+    Returns:
+        AFD: An instance of the AFD class representing the deterministic finite automaton.
+
+    Raises:
+        ValueError: If the special terminal symbol '#' is not found in the leaf positions.
+    """
+    # find '#' position
     hash_position = None
     for pos, symbol in leaf_positions.items():
         if symbol == '#':
@@ -121,7 +187,7 @@ def build_afd(root, followpos, leaf_positions):
     if hash_position is None:
         raise ValueError("Character '#' not found in RE.")
 
-    # Estado inicial: firstpos da raiz
+    # initial state: root firstpos
     start_state = frozenset(root.firstpos)
     dstates = [start_state]
     unmarked_states = deque([start_state])
@@ -155,6 +221,16 @@ def build_afd(root, followpos, leaf_positions):
     return AFD(start_state, accept_states, transitions)
 
 def find_leaf_by_position(node, pos):
+    """
+    Recursively searches for a leaf node with the given position in the syntax tree.
+
+    Args:
+        node (Node): The current node to search in.
+        pos (int): The target position number to find.
+
+    Returns:
+        Leaf or None: The leaf node with the specified position, or None if not found.
+    """
     if isinstance(node, Leaf):
         if node.position == pos:
             return node
