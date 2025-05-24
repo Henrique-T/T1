@@ -44,10 +44,30 @@ class SyntaxTree():
 
         if len(self.stack) != 1:
             raise ValueError("Invalid postfix expression")
-
         return self.stack[0]
 
-    
+    def log_syntax_tree(self, node, indent=0):
+        """
+        Recursively logs the syntax tree structure to the console.
+
+        Args:
+            node (Node): The current node of the syntax tree.
+            indent (int): The current indentation level (used for formatting).
+        """
+        prefix = "    " * indent
+        if isinstance(node, Leaf):
+            print(f"{prefix}Leaf(symbol='{node.symbol}', position={node.position})")
+        elif isinstance(node, UnaryNode):
+            print(f"{prefix}UnaryNode(operator='{node.symbol}')")
+            self.log_syntax_tree(node.child, indent + 1)
+        elif isinstance(node, BinaryNode):
+            print(f"{prefix}BinaryNode(operator='{node.symbol}')")
+            self.log_syntax_tree(node.left, indent + 1)
+            self.log_syntax_tree(node.right, indent + 1)
+        else:
+            print(f"{prefix}Unknown Node Type")
+
+
     def compute_nullable_first_last_follow(self, root):
         """Computes nullable, firstpos, lastpos, and followpos for all nodes in the tree starting from the given root node."""
         followpos = dict()

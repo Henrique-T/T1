@@ -176,6 +176,9 @@ class RegularExpression:
             output.append(stack.pop())
         output.append('#')
         output.append('.')  # <- final concat
+        # print("RegEx to Postfix: ")
+        # print(output)
+        # print("")
         return output
 
     def expand_character_classes(self, pattern):
