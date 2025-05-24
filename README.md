@@ -113,3 +113,23 @@ Parsing regEx 1: id: [a-zA-Z]([a-zA-Z] | [0-9])*
      File saved: ../token_list_output.txt
 
 ```
+
+# Input Examples
+## RegEx to be included in example_input_RE.txt
+1. id: [a-zA-Z]([a-zA-Z] | [0-9])*
+2. num: [1-9]([0-9])* | 0
+3. er1: a?(a | b)+
+4. er2: b?(a | b)+
+
+## Source text to be include in example_test_input.txt
+1. a1
+2. 0
+3. teste2
+4. 21
+5. alpha123
+6. 3444
+7. a43teste
+8. aa
+9. bbbba
+10. ababab
+11. bbbbb
